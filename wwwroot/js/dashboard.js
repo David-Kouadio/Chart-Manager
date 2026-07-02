@@ -11,7 +11,7 @@ function dashboardInit() {
         float: true,
         removable: '#trash',
         resizable: { handles: 'e,w,n,s' },
-        draggable: { scroll: false, handle: '.widget-drag-handle' },
+        draggable: {  handle: '.widget-drag-handle', scroll: false, cancel: '.widget-body, .edit-btn, .del-btn, canvas, span, button, select, textarea', },
         margin: 10,
     };
 

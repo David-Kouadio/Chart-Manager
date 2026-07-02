@@ -200,6 +200,6 @@ C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\refint\demo.dll
 C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\demo.pdb
 C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\demo.genruntimeconfig.cache
 C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\ref\demo.dll
-C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\compressed\jpa98talta-{0}-fb68borw3j-fb68borw3j.gz
 C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\compressed\tw3rtvjsvp-{0}-jy0pwdonor-jy0pwdonor.gz
 C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\demo.sourcelink.json
+C:\Users\davidkouadio\Downloads\demo\obj\Debug\net10.0\compressed\jpa98talta-{0}-lpbl1p6vig-lpbl1p6vig.gz
