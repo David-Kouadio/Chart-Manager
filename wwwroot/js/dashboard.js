@@ -15,13 +15,11 @@ function dashboardInit() {
         draggable: { scroll: false, handle: '.widget-drag-handle' },
         margin: 10,
     };
-    let insert = [ {h: 2, content: 'new item'}];
+
 
     grid = GridStack.init(options);
 
     //Grid  
-    
-    GridStack.setupDragIn('.sidepanel>.grid-stack-item', undefined, insert);
 
     grid.on('resizestop', function(event, el) {
         var canvas = el.querySelector('canvas');
