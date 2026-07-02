@@ -1,0 +1,177 @@
+@page "/dashboard"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject WidgetService WidgetService
+@inject ChartDataService ChartDataService
+@implements IAsyncDisposable
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+<p role="status">Current count: @widgetCount</p>
+
+<button class="createwidget" @onclick="AddWidget">
+   Add Widget
+</button>
+
+<div class="box1">
+    <div class="col-sm-12 col-md-10">
+        <div class="grid-stack"></div>
+    </div>
+</div>
+
+<!-- Modal de edição -->
+<div id="edit-modal-overlay" class="edit-modal-overlay">
+    <div class="edit-modal">
+        <h5>Editar Widget</h5>
+
+        <!-- tipo de widget -->
+        <div class="edit-field">
+            <label>Tipo</label>
+            <div class="edit-type-row">
+                <button id="edit-type-text"  class="edit-type-btn" onclick="setEditType('text')">📝 Texto</button>
+                <button id="edit-type-chart" class="edit-type-btn" onclick="setEditType('chart')">📊 Gráfico</button>
+            </div>
+        </div>
+
+        <!-- Texto -->
+        <div id="edit-section-text" class="edit-field" style="display:none;">
+            <label>Texto do widget</label>
+            <textarea id="edit-text-input" rows="3" class="edit-textarea"></textarea>
+        </div>
+
+        <!-- Chart -->
+        <div id="edit-section-chart" class="edit-field" style="display:none;">
+            <label>Fonte de dados</label>
+            <select id="edit-chart-source" class="edit-select"></select>
+            <label>Tipo de Gráfico</label>
+            <select id="edit-chart-type" class="edit-select">
+                <option value="bar">Barra</option>
+                <option value="line">Linha</option>
+            </select>
+        </div>
+
+        <!-- Cor -->
+        <div class="edit-field">
+            <label>Cor de fundo</label>
+            <div class="edit-color-row">
+                <div class="color-option" data-color="lightblue"   style="background:lightblue;"></div>
+                <div class="color-option" data-color="lightgreen"  style="background:lightgreen;"></div>
+                <div class="color-option" data-color="lightyellow" style="background:lightyellow;"></div>
+                <div class="color-option" data-color="lightcoral"  style="background:lightcoral;"></div>
+                <div class="color-option" data-color="lavender"    style="background:lavender;"></div>
+                <div class="color-option" data-color="lightsalmon" style="background:lightsalmon;"></div>
+                <div class="color-option" data-color="lightcyan"   style="background:lightcyan;"></div>
+                <div class="color-option" data-color="wheat"       style="background:wheat;"></div>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="edit-modal-actions">
+            <button class="edit-btn-cancel" onclick="closeEditModal()">Cancelar</button>
+            <button class="edit-btn-save" onclick="applyEditModal()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    int widgetCount = 0;
+    private DotNetObjectReference<Dashboard>? dotNetRef;
+
+    private async Task AddWidget()
+    {
+        widgetCount++;
+        await JS.InvokeVoidAsync("CreateWidget");
+    }
+
+    [JSInvokable]
+    public void UpdateWidgetCount(int removedCount)
+    {
+        widgetCount -= removedCount;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task SaveWidgetFull(string widgetId, string type, int x, int y, int w, int h,
+                                     string chartDataSource = "", string background = "lightblue",
+                                     string text = "", string chartType = "bar")
+    {
+        await WidgetService.SaveWidgetAsync(new Models.WidgetConfig
+        {
+            WidgetId        = widgetId,
+            Type            = type,
+            X = x, Y = y, W = w, H = h,
+            ChartDataSource = chartDataSource,
+            Background      = background,
+            Text            = text,
+            ChartType       = chartType
+        });
+    }
+
+    [JSInvokable]
+    public async Task<object> GetChartDataAndRedraw(string widgetId, string source, string background,
+                                                     string chartType, int x, int y, int w, int h)
+    {
+        var existing = await WidgetService.GetByIdAsync(widgetId);
+        await WidgetService.SaveWidgetAsync(new Models.WidgetConfig
+        {
+            WidgetId        = widgetId,
+            Type            = "chart",
+            X = x, Y = y, W = w, H = h,
+            ChartDataSource = source,
+            Background      = background,
+            Text            = existing?.Text ?? "",
+            ChartType       = chartType
+        });
+        return await ChartDataService.GetChartDataAsync(source);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("dashboardInit");
+            await JS.InvokeVoidAsync("setDotNetRef", dotNetRef);
+            await JS.InvokeVoidAsync("setRestoring", true);
+
+            var sources = await ChartDataService.GetAllSourcesAsync();
+            await JS.InvokeVoidAsync("populateChartSources",
+                sources.Select(s => new { s.Key, s.Label }).ToList());
+
+            var savedWidgets = await WidgetService.GetAllAsync();
+            foreach (var w in savedWidgets)
+            {
+                widgetCount++;
+                if (w.Type == "text")
+                {
+                    await JS.InvokeVoidAsync("RestoreWidget",
+                        w.WidgetId, w.Type, w.X, w.Y, w.W, w.H, null, "", w.Background, w.Text, "");
+                }
+                else
+                {
+                    var chartData = await ChartDataService.GetChartDataAsync(w.ChartDataSource);
+                    await JS.InvokeVoidAsync("RestoreWidget",
+                        w.WidgetId, w.Type, w.X, w.Y, w.W, w.H, chartData, w.ChartDataSource, w.Background, w.Text, w.ChartType);
+                }
+            }
+
+            await JS.InvokeVoidAsync("setRestoring", false);
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public async Task DeleteWidget(string widgetId)
+    {
+        await WidgetService.RemoveWidgetAsync(widgetId);
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        dotNetRef?.Dispose();
+        await Task.CompletedTask;
+    }
+}
