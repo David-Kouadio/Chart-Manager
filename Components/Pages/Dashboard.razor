@@ -9,8 +9,6 @@
 
 <h1>Dashboard</h1>
 
-<p role="status">Current count: @widgetCount</p>
-
 <button class="createwidget" @onclick="AddWidget">
    Add Widget
 </button>
@@ -92,19 +90,17 @@
 </div>
 
 @code {
-    int widgetCount = 0;
+
     private DotNetObjectReference<Dashboard>? dotNetRef;
 
     private async Task AddWidget()
     {
-        widgetCount++;
         await JS.InvokeVoidAsync("CreateWidget");
     }
 
     [JSInvokable]
     public void UpdateWidgetCount(int removedCount)
     {
-        widgetCount -= removedCount;
         StateHasChanged();
     }
 
@@ -159,7 +155,7 @@
             var savedWidgets = await WidgetService.GetAllAsync();
             foreach (var w in savedWidgets)
             {
-                widgetCount++;
+                
                 if (w.Type == "text")
                 {
                     await JS.InvokeVoidAsync("RestoreWidget",

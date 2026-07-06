@@ -33,7 +33,6 @@ public class WidgetService
             existing.W              = widget.W;
             existing.H              = widget.H;
             existing.Type           = widget.Type;
-            existing.Title          = widget.Title;
             existing.ChartType      = widget.ChartType;
             existing.ChartDataSource = widget.ChartDataSource;
             existing.Background     = widget.Background;
@@ -51,11 +50,5 @@ public class WidgetService
             _db.Widgets.Remove(widget);
             await _db.SaveChangesAsync();
         }
-    }
-
-    public async Task ClearAllWidgetsAsync()
-    {
-        _db.Widgets.RemoveRange(_db.Widgets);
-        await _db.SaveChangesAsync();
     }
 }

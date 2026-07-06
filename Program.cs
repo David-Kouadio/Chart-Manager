@@ -49,6 +49,16 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
+    if (!db.ChartSources.Any())
+    {
+        db.ChartSources.AddRange(
+            new ChartSource { Key = "new_registrations",     Label = "Novos Registos" },
+            new ChartSource { Key = "avg_session_duration",  Label = "Duração Média da Sessão" },
+            new ChartSource { Key = "revenue_by_month",      Label = "Receita por Mês" }
+        );
+        db.SaveChanges();
+    }
+
     if (!db.Orders.Any())
     {
         var rng = new Random(99);
