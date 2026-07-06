@@ -12,7 +12,7 @@ function dashboardInit() {
         acceptWidgets: true,
         removable: '#trash',
         resizable: { handles: 'e,w,n,s' },
-        draggable: { scroll: false, handle: '.widget-drag-handle' },
+        draggable: {  handle: '.widget-drag-handle', scroll: false, cancel: '.widget-body, .edit-btn, .del-btn, canvas, span, button, select, textarea', },
         margin: 10,
     };
 
@@ -171,19 +171,18 @@ function applyEditModal() {
         if (innerDiv) innerDiv.innerHTML = '';
         var canvas = document.createElement('canvas');
         canvas.style.cssText = 'width:100% !important; height:90% !important;';
+        canvas.style.backgroundColor = 'white';
         if (innerDiv) innerDiv.appendChild(canvas);
 
         if (dotNetRef) {
             dotNetRef.invokeMethodAsync('GetChartDataAndRedraw', widgetId, newSource, newBg, newChartType, node.x, node.y, node.w, node.h)
                 .then(function(chartData) {
                     if (chartData && canvas) {
-                        
-
                         new Chart(canvas, {
                             type: newChartType,
                             data: {
                                 labels: chartData.labels,
-                                datasets: [{ label: chartData.title || newSource, data: chartData.data, borderWidth: 1 }]
+                                datasets: [{ label: chartData.title || newSource, data: chartData.data, borderWidth: 1, borderColor: 'rgba(0,0,0,0.6)', backgroundColor: newBg }]
                             },
                             options: { 
                                 responsive: true,
@@ -283,15 +282,17 @@ function RestoreWidget(widgetId, type, x, y, w, h, chartData, chartSource, bg, t
     } else {
         var canvas = document.createElement('canvas');
         canvas.style.cssText = 'width:100% !important; height:90% !important;';
+        canvas.style.backgroundColor = 'white';
         new Chart(canvas, {
             type: chartType || 'bar',
-            data: { labels: chartData.labels, datasets: [{ label: chartData.title || '', data: chartData.data, borderWidth: 1 }] },
+            data: { labels: chartData.labels, datasets: [{ label: chartData.title || '', data: chartData.data, borderWidth: 1, borderColor: 'rgba(0,0,0,0.6)', backgroundColor: bg}] },
             options: { 
-                responsive: true,
+                responsive: true, 
                 maintainAspectRatio: false,
                 layout: { padding: 2 },
                 plugins: { legend: { labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } } },
                 scales: { y: { beginAtZero: true, ticks: { font: { size: 9 } } }, x: { ticks: { font: { size: 9 } } } }
+                
             }
         });
         innerDiv.appendChild(canvas);
