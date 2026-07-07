@@ -318,3 +318,7 @@ function populateChartSources(sources) {
         select.appendChild(opt);
     });
 }
+
+function clearGrid() {
+    if (grid) grid.removeAll();
+}

@@ -51,4 +51,10 @@ public class WidgetService
             await _db.SaveChangesAsync();
         }
     }
+
+    public async Task ClearAllWidgetsAsync()
+    {
+        _db.Widgets.RemoveRange(_db.Widgets);
+        await _db.SaveChangesAsync();
+    }
 }

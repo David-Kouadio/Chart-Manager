@@ -7,14 +7,16 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>Dashboard</h1>
-
-<button class="createwidget" @onclick="AddWidget">
-   Add Widget
-</button>
+<div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <div class="dashboard-actions">
+        <button class="resetwidgets" @onclick="ResetDashboard">Reset</button>
+        <button class="createwidget" @onclick="AddWidget">Add Widget</button>
+    </div>
+</div>
 
 <div class="box1">
-    <div class="col-sm-12 col-md-10">
+    <div class="grid-stack-wrapper">
         <div class="grid-stack"></div>
     </div>
 </div>
@@ -185,5 +187,14 @@
     {
         dotNetRef?.Dispose();
         await Task.CompletedTask;
+    }
+
+    private async Task ResetDashboard()
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Tem a certeza que deseja remover todos os widgets?");
+        if (!confirmed) return;
+
+        await WidgetService.ClearAllWidgetsAsync();
+        await JS.InvokeVoidAsync("clearGrid");
     }
 }
