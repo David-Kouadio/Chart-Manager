@@ -7,9 +7,11 @@
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="dashboard-header">
-    <h1>Dashboard</h1>
-    <div class="dashboard-actions">
+<div class="row">
+    <div class="col-6">
+        <h1>Dashboard</h1>
+    </div>
+    <div class=" col-6 text-end">
         <button class="resetwidgets" @onclick="ResetDashboard">Reset</button>
         <button class="createwidget" @onclick="AddWidget">Add Widget</button>
     </div>
@@ -97,13 +99,8 @@
 
     private async Task AddWidget()
     {
-        await JS.InvokeVoidAsync("CreateWidget");
-    }
-
-    [JSInvokable]
-    public void UpdateWidgetCount(int removedCount)
-    {
-        StateHasChanged();
+        var nextId = await WidgetService.GetNextIdAsync();
+        await JS.InvokeVoidAsync("CreateWidget", nextId);
     }
 
     [JSInvokable]
@@ -124,7 +121,7 @@
     }
 
     [JSInvokable]
-    public async Task<object> GetChartDataAndRedraw(string widgetId, string source, string background,
+    public async Task<Models.ChartData> GetChartDataAndRedraw(string widgetId, string source, string background,
                                                      string chartType, int x, int y, int w, int h)
     {
         var existing = await WidgetService.GetByIdAsync(widgetId);

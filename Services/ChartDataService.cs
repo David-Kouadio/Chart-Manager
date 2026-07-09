@@ -16,11 +16,11 @@ public class ChartDataService
     public async Task<List<ChartSource>> GetAllSourcesAsync()
         => await _db.ChartSources.ToListAsync();
 
-    public async Task<object> GetChartDataAsync(string key)
+    public async Task<ChartData> GetChartDataAsync(string key)
     {
         var source = await _db.ChartSources.FirstOrDefaultAsync(c => c.Key == key);
         if (source == null)
-            return new { labels = new string[] { }, data = new double[] { }, title = "" };
+            return new ChartData();
 
         // Nomes dos meses em português
         var monthNames = new[] { "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
@@ -53,7 +53,6 @@ public class ChartDataService
 
             case "avg_session_duration":
                 // Duração média simulada: usa o dia do mês do registo como proxy
-                // (substituir por uma tabela de sessões real quando existir)
                 var sessionsByMonth = await _db.Users
                     .GroupBy(u => new { u.Registration.Year, u.Registration.Month })
                     .Select(g => new { g.Key.Year, g.Key.Month, Avg = g.Average(u => u.Registration.Day) })
@@ -79,14 +78,14 @@ public class ChartDataService
                 break;
 
             default:
-                return new { labels = new string[] { }, data = new double[] { }, title = "" };
+                return new ChartData();
         }
 
-        return new
+        return new ChartData
         {
-            labels = months.Select(m => m.Label).ToArray(),
-            data,
-            title
+            Labels = months.Select(m => m.Label).ToArray(),
+            Data = data,
+            Title = title
         };
     }
 }

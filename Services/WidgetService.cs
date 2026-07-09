@@ -17,6 +17,12 @@ public class WidgetService
     public async Task<List<WidgetConfig>> GetAllAsync()
         => await _db.Widgets.ToListAsync();
 
+    public async Task<int> GetNextIdAsync()
+    {
+        var maxId = await _db.Widgets.Select(w => (int?)w.Id).MaxAsync() ?? 0;
+        return maxId + 1;
+    }
+    
     public async Task<WidgetConfig?> GetByIdAsync(string widgetId)
         => await _db.Widgets.FirstOrDefaultAsync(w => w.WidgetId == widgetId);
 

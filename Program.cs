@@ -26,6 +26,16 @@ using (var scope = app.Services.CreateScope())
     
     db.Database.EnsureCreated();
 
+    var hasLegacyTitleColumn = db.Database
+        .SqlQueryRaw<string>("SELECT name FROM pragma_table_info('Widgets') WHERE name = 'Title'")
+        .ToList()
+        .Any();
+
+    if (hasLegacyTitleColumn)
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE Widgets DROP COLUMN Title");
+    }
+
     if (!db.Users.Any())
     {
         var rng = new Random(42);

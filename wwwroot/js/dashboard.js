@@ -1,6 +1,8 @@
 var grid;
 var dotNetRef;
 
+var isRestoring = false;
+
 function dashboardInit() {
     if (grid) return; 
 
@@ -31,9 +33,15 @@ function dashboardInit() {
     grid.on('removed', function(event, items) {
         items.forEach(function(item) {
             var wId = item.el.getAttribute('data-widget-id');
-            if (wId && dotNetRef) dotNetRef.invokeMethodAsync('DeleteWidget', wId);
+            if (wId && dotNetRef) {
+                dotNetRef.invokeMethodAsync('DeleteWidget', wId)
+                    .catch(function(err) { console.error('DeleteWidget failed:', err); });
+            }
         });
-        if (dotNetRef) dotNetRef.invokeMethodAsync('UpdateWidgetCount', items.length);
+        if (dotNetRef) {
+            dotNetRef.invokeMethodAsync('UpdateWidgetCount', items.length)
+                .catch(function(err) { console.error('UpdateWidgetCount failed:', err); });
+        }
     });
 
     grid.on('change', function(event, items) {
@@ -47,7 +55,8 @@ function dashboardInit() {
             var bg              = (el.querySelector('.widget-wrapper') || {}).style?.background || 'lightblue';
             var text            = (el.querySelector('span') || {}).textContent || '';
             if (!widgetId || !dotNetRef) return;
-            dotNetRef.invokeMethodAsync('SaveWidgetFull', widgetId, widgetType, item.x, item.y, item.w, item.h, chartDataSource, bg, text, chartType);
+            dotNetRef.invokeMethodAsync('SaveWidgetFull', widgetId, widgetType, item.x, item.y, item.w, item.h, chartDataSource, bg, text, chartType)
+                .catch(function(err) { console.error('SaveWidgetFull failed:', err); });
         });
     });
 
@@ -154,7 +163,8 @@ function applyEditModal() {
         if (innerDiv) innerDiv.appendChild(span);
 
         if (dotNetRef)
-            dotNetRef.invokeMethodAsync('SaveWidgetFull', widgetId, 'text', node.x, node.y, node.w, node.h, '', newBg, newText, '');
+            dotNetRef.invokeMethodAsync('SaveWidgetFull', widgetId, 'text', node.x, node.y, node.w, node.h, '', newBg, newText, '')
+                .catch(function(err) { console.error('SaveWidgetFull failed:', err); });
 
     } else {
         _editWidgetEl.setAttribute('data-widget-type', 'chart');
@@ -193,7 +203,8 @@ function applyEditModal() {
                             }
                         });
                     }
-                });
+                })
+                .catch(function(err) { console.error('GetChartDataAndRedraw failed:', err); });
         }
     }
 
@@ -237,8 +248,8 @@ function buildDragHandle() {
 }
 
 
-function CreateWidget() {
-    var uniqueId = 'widget-' + Date.now();
+function CreateWidget(nextId) {
+    var uniqueId = 'widget-' + nextId;
     var widgetEl = grid.addWidget({ w: 2, h: 1, minW: 2 });
     widgetEl.setAttribute('data-widget-id', uniqueId);
     widgetEl.setAttribute('data-widget-type', 'text');
@@ -258,8 +269,6 @@ function CreateWidget() {
 
     openEditModal(widgetEl, true);
 }
-
-var isRestoring = false;
 
 function RestoreWidget(widgetId, type, x, y, w, h, chartData, chartSource, bg, text, chartType) {
     

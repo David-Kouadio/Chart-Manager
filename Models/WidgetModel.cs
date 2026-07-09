@@ -3,7 +3,7 @@ namespace demo.Models;
 
 public class WidgetConfig
 {
-public int Id { get; set; }
+    public int Id { get; set; }
     public string WidgetId { get; set; } = "";
     public string Type { get; set; } = "";      
     public int X { get; set; }
